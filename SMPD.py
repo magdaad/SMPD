@@ -2,6 +2,8 @@ import tkinter
 from tkinter import ttk
 from tkinter import filedialog
 import csv
+import numpy
+import math
 
 filePath = ""
 
@@ -37,6 +39,40 @@ def calculateFeatures():
 
 def calculateFisher():
     print("calculate fisher")
+    # działa jak na razie tylko dla wyboru jednej cechy
+    acer, quercus = loadData(filePath)
+    acerClass = numpy.array(acer, dtype=float)
+    quercusClass = numpy.array(quercus, dtype=float)
+    acerMeans = numpy.mean(acerClass, axis=0)
+    quercusMeans = numpy.mean(quercusClass, axis=0)
+
+    maxFisher = -1.0
+    bestIndex = -1
+
+    for index in range(0, 64):
+        # średnia dla cechy
+        acerMean = acerMeans[index]
+        quercusMean = quercusMeans[index]
+
+        # wyciągnięte wartości dla jednej cechy ze wszystkich próbek - średnia
+        acerValues = acerClass[:, index] - acerMean
+        quercusValues = quercusClass[:, index] - quercusMean
+
+        # odchylenie standardowe dla acer i quercus
+        acerDeviation = math.sqrt((sum([i ** 2 for i in acerValues]))/acerClass.shape[0])
+        quercusDeviation = math.sqrt((sum([i ** 2 for i in quercusValues]))/quercusClass.shape[0])
+
+        # fisher dla danej cechy
+        fisher = abs(acerMean - quercusMean)/(acerDeviation + quercusDeviation)
+        if fisher > maxFisher:
+            maxFisher=fisher
+            bestIndex=index
+
+    print(maxFisher)
+    print(bestIndex)
+    listbox.insert(tkinter.END, "index najlepszej cechy: " + str(bestIndex) + " wartość fisher: " + str(maxFisher))
+    # printuje index a nie numer cechy (index+1)
+
 
 
 def calculateSFS():
