@@ -4,6 +4,7 @@ from tkinter import filedialog
 import csv
 import numpy
 import math
+import itertools
 
 filePath = ""
 
@@ -49,30 +50,63 @@ def calculateFisher():
     maxFisher = -1.0
     bestIndex = -1
 
-    for index in range(0, 64):
-        # średnia dla cechy
-        acerMean = acerMeans[index]
-        quercusMean = quercusMeans[index]
+    bestIndexes = ()
 
-        # wyciągnięte wartości dla jednej cechy ze wszystkich próbek - średnia
-        acerValues = acerClass[:, index] - acerMean
-        quercusValues = quercusClass[:, index] - quercusMean
+    # dodajemy 1 bo zbiera index a nie ilość cech
+    selectedNumberOfFeatures = combobox.current() + 1
+    if(selectedNumberOfFeatures == 1):
+        for index in range(0, 64):
+            # średnia dla cechy
+            acerMean = acerMeans[index]
+            quercusMean = quercusMeans[index]
 
-        # odchylenie standardowe dla acer i quercus
-        acerDeviation = math.sqrt((sum([i ** 2 for i in acerValues]))/acerClass.shape[0])
-        quercusDeviation = math.sqrt((sum([i ** 2 for i in quercusValues]))/quercusClass.shape[0])
+            # wyciągnięte wartości dla jednej cechy ze wszystkich próbek - średnia
+            acerValues = acerClass[:, index] - acerMean
+            quercusValues = quercusClass[:, index] - quercusMean
 
-        # fisher dla danej cechy
-        fisher = abs(acerMean - quercusMean)/(acerDeviation + quercusDeviation)
-        if fisher > maxFisher:
-            maxFisher=fisher
-            bestIndex=index
+            # odchylenie standardowe dla acer i quercus
+            acerDeviation = math.sqrt((sum([i ** 2 for i in acerValues]))/acerClass.shape[0])
+            quercusDeviation = math.sqrt((sum([i ** 2 for i in quercusValues]))/quercusClass.shape[0])
 
-    print(maxFisher)
-    print(bestIndex)
-    listbox.insert(tkinter.END, "index najlepszej cechy: " + str(bestIndex) + " wartość fisher: " + str(maxFisher))
-    # printuje index a nie numer cechy (index+1)
+            # fisher dla danej cechy
+            fisher = abs(acerMean - quercusMean)/(acerDeviation + quercusDeviation)
+            if fisher > maxFisher:
+                maxFisher = fisher
+                bestIndex = bestIndex
 
+        listbox.insert(tkinter.END, "index najlepszej cechy: " + str(bestIndex) + " wartość fisher: " + str(maxFisher))
+        # printuje index a nie numer cechy (index+1)
+    else:
+        print("multiple")
+        # dla wszystkich możliwych kombinacji cech (wybranej ilości cech)
+        for combination in itertools.combinations([i for i in range(0, 64)], selectedNumberOfFeatures):
+            # wektor średnich dla wybranych cech
+            acerMean = []
+            quercusMean = []
+            # wyciągnięte wartości dla wybranej ilości cech ze wszystkich próbek - średnia
+            acerValues = []
+            quercusValues = []
+            # dla pojedynczej cechy w kombinacji cech
+            for feature in combination:
+                acerValues.append(acerClass[:, feature] - acerMeans[feature])
+                quercusValues.append(quercusClass[:, feature] - quercusMeans[feature])
+                acerMean.append(acerMeans[feature])
+                quercusMean.append(quercusMeans[feature])
+
+            # macierz kowariancji macierz*skorelowana macierz/ilość próbek (acerClass.shape[0]
+            acerCovariance = (1 / acerClass.shape[0]) * numpy.dot(numpy.array(acerValues, dtype=float),
+                                                                 numpy.transpose(numpy.array(acerValues, dtype=float)))
+            quercusCovariance = (1 / quercusClass.shape[0]) * numpy.dot(numpy.array(quercusValues, dtype=float),
+                                                                  numpy.transpose(numpy.array(quercusValues, dtype=float)))
+            # f = |acerśrednie - acerśrednie| / det(acerCov + quercusCov)
+            fisher = numpy.linalg.norm(numpy.array(acerMean, dtype=float) - numpy.array(quercusMean, dtype=float)) / \
+                            numpy.linalg.det(acerCovariance + quercusCovariance)
+
+            if fisher > maxFisher:
+                maxFisher = fisher
+                bestIndexes = combination
+
+        listbox.insert(tkinter.END, "index najlepszych cech: " + str(bestIndexes) + " wartość fisher: " + str(maxFisher))
 
 
 def calculateSFS():
