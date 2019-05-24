@@ -5,8 +5,12 @@ import csv
 import numpy
 import math
 import itertools
+import random
 
 filePath = ""
+trainSet = []
+testSet = []
+totalSet = []
 
 def loadFile():
     global filePath
@@ -177,6 +181,37 @@ def calculateSFS():
     # jak już mamy tyle cech ile chcieliśmy to kończymy i listujemy
     listbox.insert(tkinter.END, "SFS: index najlepszych cech: " + str(bestIndexes) + " wartość fisher: " + str(maxFisher))
 
+def train():
+    # podzielić na train i test set (cły wejściowy input)
+    print("train")
+    train_set_percent = int(train_entry.get())
+    global trainSet
+    global testSet
+    global totalSet
+    trainSet = []
+    testSet = []
+    totalSet = []
+    # pobierz dane do trenowania i testowania
+    with open(filePath, "r") as f:
+        reader = csv.reader(f, delimiter=",")
+        for row in reader:
+            if "Acer" in row[0] or "Quercus" in row[0]:
+                totalSet.append(row)
+    # ile próbek do trenowania na podstawie wpisanego procentu
+    numOfTrainSamples = math.ceil(train_set_percent/100*numpy.array(totalSet).shape[0])
+
+    print(numOfTrainSamples)
+    # skopiuj totalSet do test set
+    testSet = totalSet.copy()
+    for i in range(0, numOfTrainSamples):
+        # wylosuj randomowo item do testu
+        item = random.choice(testSet)
+        # dodaj do train seta
+        trainSet.append(item)
+        # usuń z train seta
+        testSet.remove(item)
+
+
 main = tkinter.Tk()
 main.title('SMPD')
 main.minsize(800, 500)
@@ -246,22 +281,18 @@ kNM_radiobutton = ttk.Radiobutton(page2, text="kNM",  value="kNM", variable=sele
 kNM_radiobutton.grid(row=5, column=0, sticky="nw", padx=20)
 
 # train controls
-train_button = ttk.Button(page2, text="Train", cursor="hand2")
-train_button.grid(row=6, column=0, padx=20, pady=20, sticky="nw")
+train_button = ttk.Button(page2, text="Train", cursor="hand2", command=lambda: train())
+train_button.grid(row=6, column=2, padx=20, pady=20, sticky="nw")
 train_label = ttk.Label(page2, text="Training part (%):", justify="left")
-train_label.grid(row=6, column=1, sticky="nw", padx=20, pady=20)
+train_label.grid(row=6, column=0, sticky="nw", padx=20, pady=20)
 train_entry = ttk.Entry(page2, width=20)
-train_entry.grid(row=6, column=2, sticky="nw", padx=20, pady=20)
+train_entry.grid(row=6, column=1, sticky="nw", padx=20, pady=20)
 
 # execute button
 execute_button = ttk.Button(page2, text="Execute", cursor="hand2")
 execute_button.grid(row=7, column=0, padx=20, pady=20, sticky="nw")
 
-listbox_classify = tkinter.Listbox(page2, activestyle="none",
-                    height=30, width=70)
+listbox_classify = tkinter.Listbox(page2, activestyle="none", height=30, width=70)
 listbox_classify.grid(row=0, column=3, rowspan=50, padx=20, pady=20)
-
-
-
 
 main.mainloop()
