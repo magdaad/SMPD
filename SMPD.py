@@ -66,7 +66,7 @@ def calculateFisher():
             fisher = abs(acerMean - quercusMean)/(acerDeviation + quercusDeviation)
             if fisher > maxFisher:
                 maxFisher = fisher
-                bestIndex = bestIndex
+                bestIndex = index
 
         listbox.insert(tkinter.END, "index najlepszej cechy: " + str(bestIndex) + " wartość fisher: " + str(maxFisher))
         # printuje index a nie numer cechy (index+1)
