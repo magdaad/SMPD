@@ -6,6 +6,7 @@ import numpy
 import math
 import itertools
 import random
+import sys
 
 filePath = ""
 trainSet = []
@@ -200,7 +201,6 @@ def train():
     # ile próbek do trenowania na podstawie wpisanego procentu
     numOfTrainSamples = math.ceil(train_set_percent/100*numpy.array(totalSet).shape[0])
 
-    print(numOfTrainSamples)
     # skopiuj totalSet do test set
     testSet = totalSet.copy()
     for i in range(0, numOfTrainSamples):
@@ -210,6 +210,51 @@ def train():
         trainSet.append(item)
         # usuń z train seta
         testSet.remove(item)
+
+def execute():
+    print("execute")
+    if selected_classify_method.get() == "NN":
+        calcNN()
+
+def calcNN():
+    # w sumie to nie wiem czy są potrzebne kopie tych tablic
+    # są zrobione na wszelki wypadek
+    # żeby nie namieszać w globalnym podziale na sety który musi być taki sam dla kazdej metody klasyfikacji
+    testSetCopy = testSet.copy()
+    trainSetCopy = trainSet.copy()
+    goodClassification = 0
+    badClassification = 0
+    goodClassificationPercent = 0
+    # dla każdego elementu ze zbioru testowego
+    for testItem in testSetCopy:
+        maxDistance = sys.maxsize
+        classifiedToClass = ""
+        for trainItem in trainSetCopy:
+            # pomijamy nazwe klasy
+            difference = numpy.array(testItem[1:], dtype=float) - numpy.array(trainItem[1:], dtype=float)
+            squared = []
+            # robimy drugą potęge
+            for i in difference:
+                squared.append(pow(i, 2))
+            distance = math.sqrt(numpy.sum(numpy.array(squared)))
+            if distance < maxDistance:
+                maxDistance = distance
+                classifiedToClass = trainItem[0]
+        if "Acer" in testItem[0] and "Acer" in classifiedToClass:
+            goodClassification = goodClassification + 1
+        elif "Quercus" in testItem[0] and "Quercus" in classifiedToClass:
+            goodClassification = goodClassification + 1
+        else:
+            badClassification = badClassification + 1
+
+        goodClassificationPercent = 100 * goodClassification / numpy.array(testSetCopy).shape[0]
+
+    # TODO printy do usunięcia, przydatne do testu
+    print("Dobrze sklasyfikowane próbki: " + str(goodClassification))
+    print("Źle sklasyfikowane próbki: " + str(badClassification))
+    print("Dobrze sklasyfikowane próbki: " + str(goodClassificationPercent))
+    print(" próbki: " + str(numpy.array(testSetCopy).shape[0]))
+    listbox_classify.insert(tkinter.END, "Procent dobrze sklasyfikowanych próbek: " + str(goodClassificationPercent))
 
 
 main = tkinter.Tk()
@@ -289,7 +334,7 @@ train_entry = ttk.Entry(page2, width=20)
 train_entry.grid(row=6, column=1, sticky="nw", padx=20, pady=20)
 
 # execute button
-execute_button = ttk.Button(page2, text="Execute", cursor="hand2")
+execute_button = ttk.Button(page2, text="Execute", cursor="hand2", command=lambda: execute())
 execute_button.grid(row=7, column=0, padx=20, pady=20, sticky="nw")
 
 listbox_classify = tkinter.Listbox(page2, activestyle="none", height=30, width=70)
