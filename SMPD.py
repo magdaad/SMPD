@@ -8,13 +8,11 @@ import itertools
 
 filePath = ""
 
-
 def loadFile():
     global filePath
     filePath = filedialog.askopenfilename()
     print(filePath)
     loadData(filePath)
-
 
 def loadData(filePath):
     acerClass = []
@@ -30,17 +28,14 @@ def loadData(filePath):
                 quercusClass.append(row)
     return acerClass, quercusClass
 
-
 def calculateFeatures():
     if selected_method.get() == "Fisher":
         calculateFisher()
-    if selected_method.get() == "Quercus":
+    if selected_method.get() == "SFS":
         calculateSFS()
-
 
 def calculateFisher():
     print("calculate fisher")
-    # działa jak na razie tylko dla wyboru jednej cechy
     acer, quercus = loadData(filePath)
     acerClass = numpy.array(acer, dtype=float)
     quercusClass = numpy.array(quercus, dtype=float)
@@ -49,7 +44,6 @@ def calculateFisher():
 
     maxFisher = -1.0
     bestIndex = -1
-
     bestIndexes = ()
 
     # dodajemy 1 bo zbiera index a nie ilość cech
@@ -106,12 +100,82 @@ def calculateFisher():
                 maxFisher = fisher
                 bestIndexes = combination
 
-        listbox.insert(tkinter.END, "index najlepszych cech: " + str(bestIndexes) + " wartość fisher: " + str(maxFisher))
-
+        listbox.insert(tkinter.END, "Fisher: index najlepszych cech: " + str(bestIndexes) + " wartość fisher: " + str(maxFisher))
 
 def calculateSFS():
     print("calculate sfs")
+    acer, quercus = loadData(filePath)
+    acerClass = numpy.array(acer, dtype=float)
+    quercusClass = numpy.array(quercus, dtype=float)
+    acerMeans = numpy.mean(acerClass, axis=0)
+    quercusMeans = numpy.mean(quercusClass, axis=0)
 
+    maxFisher = -1.0
+    bestIndexes = []
+    bestIndex = -1
+    selectedNumberOfFeatures = combobox.current() + 1
+
+    #policz fisher dla jednej cechy
+    for index in range(0, 64):
+        # średnia dla cechy
+        acerMean = acerMeans[index]
+        quercusMean = quercusMeans[index]
+
+        # wyciągnięte wartości dla jednej cechy ze wszystkich próbek - średnia
+        acerValues = acerClass[:, index] - acerMean
+        quercusValues = quercusClass[:, index] - quercusMean
+
+        # odchylenie standardowe dla acer i quercus
+        acerDeviation = math.sqrt((sum([i ** 2 for i in acerValues]))/acerClass.shape[0])
+        quercusDeviation = math.sqrt((sum([i ** 2 for i in quercusValues]))/quercusClass.shape[0])
+
+        # fisher dla danej cechy
+        fisher = abs(acerMean - quercusMean)/(acerDeviation + quercusDeviation)
+        if fisher > maxFisher:
+            maxFisher = fisher
+            bestIndex = index
+    bestIndexes.append(bestIndex)
+
+    # jesli ma być więcej niż jedna cecha...
+    if(selectedNumberOfFeatures > 1):
+        # ...to licz dalej aż do momentu jak bedzie tyle ile ma być
+        while len(bestIndexes) < selectedNumberOfFeatures:
+            # dorzucaj do już wybranych najlepszych cech kolejne z zakresu 0-63
+            for index in range(0, 64):
+                # a jeśli się powtarza to pomiń
+                if index in bestIndexes:
+                    continue
+                # wektor średnich dla wybranych cech
+                acerMean = []
+                quercusMean = []
+                # wyciągnięte wartości dla wybranej ilości cech ze wszystkich próbek - średnia
+                acerValues = []
+                quercusValues = []
+                # dla pojedynczej cechy w kombinacji cech
+                tempFeatureComb = bestIndexes.copy()
+                tempFeatureComb.append(index)
+                #dla cechy w nowej kombinacji cech
+                for feature in tempFeatureComb:
+                    acerValues.append(acerClass[:, feature] - acerMeans[feature])
+                    quercusValues.append(quercusClass[:, feature] - quercusMeans[feature])
+                    acerMean.append(acerMeans[feature])
+                    quercusMean.append(quercusMeans[feature])
+
+                # macierz kowariancji macierz*skorelowana macierz/ilość próbek (acerClass.shape[0]
+                acerCovariance = (1 / acerClass.shape[0]) * numpy.dot(numpy.array(acerValues, dtype=float),
+                                                                     numpy.transpose(numpy.array(acerValues, dtype=float)))
+                quercusCovariance = (1 / quercusClass.shape[0]) * numpy.dot(numpy.array(quercusValues, dtype=float),
+                                                                      numpy.transpose(numpy.array(quercusValues, dtype=float)))
+                # f = |acerśrednie - acerśrednie| / det(acerCov + quercusCov)
+                fisher = numpy.linalg.norm(numpy.array(acerMean, dtype=float) - numpy.array(quercusMean, dtype=float)) / \
+                                numpy.linalg.det(acerCovariance + quercusCovariance)
+                if fisher > maxFisher:
+                    maxFisher = fisher
+                    bestIndex = index
+            # dorzuć do listy najlepszych cech nowy najlepszy index
+            bestIndexes.append(bestIndex)
+    # jak już mamy tyle cech ile chcieliśmy to kończymy i listujemy
+    listbox.insert(tkinter.END, "SFS: index najlepszych cech: " + str(bestIndexes) + " wartość fisher: " + str(maxFisher))
 
 main = tkinter.Tk()
 main.title('SMPD')
