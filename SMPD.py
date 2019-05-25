@@ -7,6 +7,7 @@ import math
 import itertools
 import random
 import sys
+import heapq
 
 filePath = ""
 trainSet = []
@@ -226,10 +227,9 @@ def calcNN():
     trainSetCopy = trainSet.copy()
     goodClassification = 0
     badClassification = 0
-    goodClassificationPercent = 0
     # dla każdego elementu ze zbioru testowego
     for testItem in testSetCopy:
-        maxDistance = sys.maxsize
+        minDistance = sys.maxsize
         classifiedToClass = ""
         for trainItem in trainSetCopy:
             # pomijamy nazwe klasy
@@ -239,8 +239,8 @@ def calcNN():
             for i in difference:
                 squared.append(pow(i, 2))
             distance = math.sqrt(numpy.sum(numpy.array(squared)))
-            if distance < maxDistance:
-                maxDistance = distance
+            if distance < minDistance:
+                minDistance = distance
                 classifiedToClass = trainItem[0]
         if "Acer" in testItem[0] and "Acer" in classifiedToClass:
             goodClassification = goodClassification + 1
@@ -249,17 +249,68 @@ def calcNN():
         else:
             badClassification = badClassification + 1
 
-        goodClassificationPercent = 100 * goodClassification / numpy.array(testSetCopy).shape[0]
+    goodClassificationPercent = 100 * goodClassification / numpy.array(testSetCopy).shape[0]
 
     # TODO printy do usunięcia, przydatne do testu
     print("Dobrze sklasyfikowane próbki: " + str(goodClassification))
     print("Źle sklasyfikowane próbki: " + str(badClassification))
     print("Dobrze sklasyfikowane próbki: " + str(goodClassificationPercent))
     print(" próbki: " + str(numpy.array(testSetCopy).shape[0]))
-    listbox_classify.insert(tkinter.END, "Procent dobrze sklasyfikowanych próbek: " + str(goodClassificationPercent))
+    listbox_classify.insert(tkinter.END, "NN procent dobrze sklasyfikowanych próbek: " + str(goodClassificationPercent))
 
 def calckNN():
     print("knn")
+    k = int(k_entry.get())
+
+    testSetCopy = testSet.copy()
+    trainSetCopy = trainSet.copy()
+    goodClassification = 0
+    badClassification = 0
+    classifiedToClass = ""
+
+    for testItem in testSetCopy:
+        distanceList = []
+
+        for trainItem in trainSetCopy:
+            difference = numpy.array(testItem[1:], dtype=float) - numpy.array(trainItem[1:], dtype=float)
+            squared = []
+            for i in difference:
+                squared.append(pow(i, 2))
+            distance = math.sqrt(numpy.sum(numpy.array(squared)))
+            # odległość próbki od elementu klasy (zapisuje odległość i klase próbki treningowej)
+            distanceClassItem = [trainItem[0], distance]
+            distanceList.append(distanceClassItem)
+        bestDistancesList = heapq.nsmallest(k, distanceList, key=lambda item: item[1])
+        acerOccurrence = 0
+        quercusOccurrence = 0
+
+        for item in bestDistancesList:
+            if "Acer" in item[0]:
+                acerOccurrence = acerOccurrence + 1
+            elif "Quercus" in item[0]:
+                quercusOccurrence = quercusOccurrence + 1
+
+        if acerOccurrence > quercusOccurrence:
+            classifiedToClass = "Acer"
+        else:
+            classifiedToClass = "Quercus"
+
+        if "Acer" in testItem[0] and "Acer" in classifiedToClass:
+            goodClassification = goodClassification + 1
+        elif "Quercus" in testItem[0] and "Quercus" in classifiedToClass:
+            goodClassification = goodClassification + 1
+        else:
+            badClassification = badClassification + 1
+
+    goodClassificationPercent = 100 * goodClassification / numpy.array(testSetCopy).shape[0]
+    print(goodClassificationPercent)
+    # TODO printy do usunięcia, przydatne do testu
+    print("Dobrze sklasyfikowane próbki: " + str(goodClassification))
+    print("Źle sklasyfikowane próbki: " + str(badClassification))
+    print("Dobrze sklasyfikowane próbki: " + str(goodClassificationPercent))
+    print(" próbki: " + str(numpy.array(testSetCopy).shape[0]))
+    listbox_classify.insert(tkinter.END, "kNN procent dobrze sklasyfikowanych próbek: " + str(goodClassificationPercent))
+
 
 main = tkinter.Tk()
 main.title('SMPD')
