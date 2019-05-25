@@ -215,6 +215,8 @@ def execute():
     print("execute")
     if selected_classify_method.get() == "NN":
         calcNN()
+    elif selected_classify_method.get() == "kNN":
+        calckNN()
 
 def calcNN():
     # w sumie to nie wiem czy są potrzebne kopie tych tablic
@@ -256,6 +258,8 @@ def calcNN():
     print(" próbki: " + str(numpy.array(testSetCopy).shape[0]))
     listbox_classify.insert(tkinter.END, "Procent dobrze sklasyfikowanych próbek: " + str(goodClassificationPercent))
 
+def calckNN():
+    print("knn")
 
 main = tkinter.Tk()
 main.title('SMPD')
@@ -333,9 +337,14 @@ train_label.grid(row=6, column=0, sticky="nw", padx=20, pady=20)
 train_entry = ttk.Entry(page2, width=20)
 train_entry.grid(row=6, column=1, sticky="nw", padx=20, pady=20)
 
+k_label = ttk.Label(page2, text="k:", justify="left")
+k_label.grid(row=7, column=0, sticky="nw", padx=20, pady=20)
+k_entry = ttk.Entry(page2, width=20)
+k_entry.grid(row=7, column=1, sticky="nw", padx=20, pady=20)
+
 # execute button
 execute_button = ttk.Button(page2, text="Execute", cursor="hand2", command=lambda: execute())
-execute_button.grid(row=7, column=0, padx=20, pady=20, sticky="nw")
+execute_button.grid(row=8, column=0, padx=20, pady=20, sticky="nw")
 
 listbox_classify = tkinter.Listbox(page2, activestyle="none", height=30, width=70)
 listbox_classify.grid(row=0, column=3, rowspan=50, padx=20, pady=20)
