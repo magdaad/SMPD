@@ -218,6 +218,8 @@ def execute():
         calcNN()
     elif selected_classify_method.get() == "kNN":
         calckNN()
+    elif selected_classify_method.get() == "NM":
+        calcNM()
 
 def calcNN():
     # w sumie to nie wiem czy są potrzebne kopie tych tablic
@@ -310,6 +312,60 @@ def calckNN():
     print("Dobrze sklasyfikowane próbki: " + str(goodClassificationPercent))
     print(" próbki: " + str(numpy.array(testSetCopy).shape[0]))
     listbox_classify.insert(tkinter.END, "kNN procent dobrze sklasyfikowanych próbek: " + str(goodClassificationPercent))
+
+def calcNM():
+    print("calc NM")
+    testSetCopy = testSet.copy()
+    trainSetCopy = trainSet.copy()
+    goodClassification = 0
+    badClassification = 0
+    acerTrainSet = []
+    quercusTrainSet = []
+
+    for item in trainSetCopy:
+        if "Acer" in item[0]:
+            # del item[0]
+            acerTrainSet.append(item[1:])
+        elif "Quercus" in item[0]:
+            # del item[0]
+            quercusTrainSet.append(item[1:])
+    # policz średnią klasy
+    acerMean = []
+    quercusMean = []
+    acerMean = numpy.mean(numpy.array(acerTrainSet, dtype=float), axis=0)
+    quercusMean = numpy.mean(numpy.array(quercusTrainSet, dtype=float), axis=0)
+
+    for testItem in testSetCopy:
+        # policz odległość od średniej klasy Acer i Quercus
+        differenceAcer = numpy.array(testItem[1:], dtype=float) - numpy.array(acerMean, dtype=float)
+        differenceQuercus = numpy.array(testItem[1:], dtype=float) - numpy.array(quercusMean, dtype=float)
+
+        squaredAcer = []
+        squaredQuercus = []
+        for i in differenceAcer:
+            squaredAcer.append(pow(i, 2))
+        for i in differenceQuercus:
+            squaredQuercus.append(pow(i, 2))
+        distanceAcer = math.sqrt(numpy.sum(numpy.array(squaredAcer)))
+        distanceQuercus = math.sqrt(numpy.sum(numpy.array(squaredQuercus)))
+
+        if distanceAcer < distanceQuercus:
+            classifiedToClass = "Acer"
+        else:
+            classifiedToClass = "Quercus"
+
+        if "Acer" in testItem[0] and "Acer" in classifiedToClass:
+            goodClassification = goodClassification + 1
+        elif "Quercus" in testItem[0] and "Quercus" in classifiedToClass:
+            goodClassification = goodClassification + 1
+        else:
+            badClassification = badClassification + 1
+
+    goodClassificationPercent = 100 * goodClassification / numpy.array(testSetCopy).shape[0]
+    print(goodClassificationPercent)
+    listbox_classify.insert(tkinter.END, "NM procent dobrze sklasyfikowanych próbek: " + str(goodClassificationPercent))
+
+
 
 
 main = tkinter.Tk()
