@@ -215,11 +215,20 @@ def train():
 def execute():
     print("execute")
     if selected_classify_method.get() == "NN":
-        calcNN()
+        goodClassificationPercent = calcNN()
+        listbox_classify.insert(tkinter.END,
+                                "NN procent dobrze sklasyfikowanych próbek: " + str(goodClassificationPercent))
+
     elif selected_classify_method.get() == "kNN":
-        calckNN()
+        goodClassificationPercent = calckNN()
+        listbox_classify.insert(tkinter.END,
+                                "kNN procent dobrze sklasyfikowanych próbek: " + str(goodClassificationPercent))
+
     elif selected_classify_method.get() == "NM":
-        calcNM()
+        goodClassificationPercent = calcNM()
+        listbox_classify.insert(tkinter.END,
+                                "NM procent dobrze sklasyfikowanych próbek: " + str(goodClassificationPercent))
+
 
 def calcNN():
     # w sumie to nie wiem czy są potrzebne kopie tych tablic
@@ -258,7 +267,7 @@ def calcNN():
     print("Źle sklasyfikowane próbki: " + str(badClassification))
     print("Dobrze sklasyfikowane próbki: " + str(goodClassificationPercent))
     print(" próbki: " + str(numpy.array(testSetCopy).shape[0]))
-    listbox_classify.insert(tkinter.END, "NN procent dobrze sklasyfikowanych próbek: " + str(goodClassificationPercent))
+    return goodClassificationPercent
 
 def calckNN():
     print("knn")
@@ -311,7 +320,7 @@ def calckNN():
     print("Źle sklasyfikowane próbki: " + str(badClassification))
     print("Dobrze sklasyfikowane próbki: " + str(goodClassificationPercent))
     print(" próbki: " + str(numpy.array(testSetCopy).shape[0]))
-    listbox_classify.insert(tkinter.END, "kNN procent dobrze sklasyfikowanych próbek: " + str(goodClassificationPercent))
+    return goodClassificationPercent
 
 def calcNM():
     print("calc NM")
@@ -363,9 +372,10 @@ def calcNM():
 
     goodClassificationPercent = 100 * goodClassification / numpy.array(testSetCopy).shape[0]
     print(goodClassificationPercent)
-    listbox_classify.insert(tkinter.END, "NM procent dobrze sklasyfikowanych próbek: " + str(goodClassificationPercent))
+    return goodClassificationPercent
 
-
+def crossvalidate():
+    print("crossvalidate")
 
 
 main = tkinter.Tk()
@@ -453,7 +463,21 @@ k_entry.grid(row=7, column=1, sticky="nw", padx=20, pady=20)
 execute_button = ttk.Button(page2, text="Execute", cursor="hand2", command=lambda: execute())
 execute_button.grid(row=8, column=0, padx=20, pady=20, sticky="nw")
 
+crossvalidation_button = ttk.Button(page2, text="Crossvalidation", cursor="hand2", command=lambda: crossvalidate())
+crossvalidation_button.grid(row=9, column=2, padx=20, pady=20, sticky="nw")
+crossvalidation_label = ttk.Label(page2, text="Num of subsets:", justify="left")
+crossvalidation_label.grid(row=9, column=0, sticky="nw", padx=20, pady=20)
+crossvalidation_entry = ttk.Entry(page2, width=20)
+crossvalidation_entry.grid(row=9, column=1, sticky="nw", padx=20, pady=20)
+
+bootstrap_button = ttk.Button(page2, text="Bootstrap", cursor="hand2")
+bootstrap_button.grid(row=10, column=2, padx=20, pady=20, sticky="nw")
+bootstrap_label = ttk.Label(page2, text="Num of iterations:", justify="left")
+bootstrap_label.grid(row=10, column=0, sticky="nw", padx=20, pady=20)
+bootstrap_entry = ttk.Entry(page2, width=20)
+bootstrap_entry.grid(row=10, column=1, sticky="nw", padx=20, pady=20)
+
 listbox_classify = tkinter.Listbox(page2, activestyle="none", height=30, width=70)
-listbox_classify.grid(row=0, column=3, rowspan=50, padx=20, pady=20)
+listbox_classify.grid(row=0, column=3, rowspan=100, padx=20, pady=20)
 
 main.mainloop()
