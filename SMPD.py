@@ -13,12 +13,15 @@ filePath = ""
 trainSet = []
 testSet = []
 totalSet = []
+rememberBestFeatures = [0, 1, 2, 3]
+
 
 def loadFile():
     global filePath
     filePath = filedialog.askopenfilename()
     print(filePath)
-    loadData(filePath)
+    # loadData(filePath)
+
 
 def loadData(filePath):
     acerClass = []
@@ -34,11 +37,13 @@ def loadData(filePath):
                 quercusClass.append(row)
     return acerClass, quercusClass
 
+
 def calculateFeatures():
     if selected_method.get() == "Fisher":
         calculateFisher()
     if selected_method.get() == "SFS":
         calculateSFS()
+
 
 def calculateFisher():
     print("calculate fisher")
@@ -50,7 +55,7 @@ def calculateFisher():
 
     maxFisher = -1.0
     bestIndex = -1
-    bestIndexes = ()
+    bestIndexes = []
 
     # dodajemy 1 bo zbiera index a nie ilość cech
     selectedNumberOfFeatures = combobox.current() + 1
@@ -75,6 +80,11 @@ def calculateFisher():
                 bestIndex = index
 
         listbox.insert(tkinter.END, "index najlepszej cechy: " + str(bestIndex) + " wartość fisher: " + str(maxFisher))
+        global rememberBestFeatures
+        del rememberBestFeatures[:]
+        rememberBestFeatures.append(bestIndex)
+        print(rememberBestFeatures)
+
         # printuje index a nie numer cechy (index+1)
     else:
         print("multiple")
@@ -107,6 +117,10 @@ def calculateFisher():
                 bestIndexes = combination
 
         listbox.insert(tkinter.END, "Fisher: index najlepszych cech: " + str(bestIndexes) + " wartość fisher: " + str(maxFisher))
+        del rememberBestFeatures[:]
+        rememberBestFeatures = list(bestIndexes)
+        print(rememberBestFeatures)
+
 
 def calculateSFS():
     print("calculate sfs")
@@ -182,6 +196,10 @@ def calculateSFS():
             bestIndexes.append(bestIndex)
     # jak już mamy tyle cech ile chcieliśmy to kończymy i listujemy
     listbox.insert(tkinter.END, "SFS: index najlepszych cech: " + str(bestIndexes) + " wartość fisher: " + str(maxFisher))
+    global rememberBestFeatures
+    del rememberBestFeatures[:]
+    rememberBestFeatures = bestIndexes.copy()
+    print(rememberBestFeatures)
 
 def train():
     # podzielić na train i test set (cły wejściowy input)
@@ -202,8 +220,17 @@ def train():
     # ile próbek do trenowania na podstawie wpisanego procentu
     numOfTrainSamples = math.ceil(train_set_percent/100*numpy.array(totalSet).shape[0])
 
+    global rememberBestFeatures
+    selectedBestFeatures = rememberBestFeatures.copy()
+    selectedBestFeatures = numpy.array(selectedBestFeatures) + 1
+    if 0 not in selectedBestFeatures:
+        selectedBestFeatures = numpy.insert(selectedBestFeatures, 0, [0])
+    print(selectedBestFeatures)
+    a = numpy.array(totalSet)
+    e = a[:, selectedBestFeatures]
+
     # skopiuj totalSet do test set
-    testSet = totalSet.copy()
+    testSet = e.tolist()
     for i in range(0, numOfTrainSamples):
         # wylosuj randomowo item do testu
         item = random.choice(testSet)
@@ -211,6 +238,8 @@ def train():
         trainSet.append(item)
         # usuń z train seta
         testSet.remove(item)
+        # numpy.delete(testSet, item, axis=0)
+
 
 def execute():
     print("execute")
@@ -269,6 +298,7 @@ def calcNN():
     print(" próbki: " + str(numpy.array(testSetCopy).shape[0]))
     return goodClassificationPercent
 
+
 def calckNN():
     print("knn")
     k = int(k_entry.get())
@@ -322,6 +352,7 @@ def calckNN():
     print(" próbki: " + str(numpy.array(testSetCopy).shape[0]))
     return goodClassificationPercent
 
+
 def calcNM():
     print("calc NM")
     testSetCopy = testSet.copy()
@@ -373,6 +404,7 @@ def calcNM():
     goodClassificationPercent = 100 * goodClassification / numpy.array(testSetCopy).shape[0]
     print(goodClassificationPercent)
     return goodClassificationPercent
+
 
 def crossvalidate():
     print("crossvalidate")
