@@ -225,7 +225,6 @@ def train():
     selectedBestFeatures = numpy.array(selectedBestFeatures) + 1
     if 0 not in selectedBestFeatures:
         selectedBestFeatures = numpy.insert(selectedBestFeatures, 0, [0])
-    print(selectedBestFeatures)
     a = numpy.array(totalSet)
     e = a[:, selectedBestFeatures]
 
@@ -410,6 +409,82 @@ def crossvalidate():
     print("crossvalidate")
 
 
+def bootstrap():
+    print("Bootstrap")
+    nnQuality = []
+    knnQuality = []
+    nmQuality = []
+    knmQuality = []
+
+    iterations = int(bootstrap_entry_iterations.get())
+    train_set_percent = int(bootstrap_entry_percent.get())
+
+    #pobierz dane i zamiesaj
+    for i in range (0, iterations):
+        global trainSet
+        global testSet
+        global totalSet
+        trainSet = []
+        testSet = []
+        totalSet = []
+        # pobierz dane do trenowania i testowania
+        with open(filePath, "r") as f:
+            reader = csv.reader(f, delimiter=",")
+            for row in reader:
+                if "Acer" in row[0] or "Quercus" in row[0]:
+                    totalSet.append(row)
+
+        numOfTrainSamples = math.ceil(train_set_percent/100*numpy.array(totalSet).shape[0])
+
+        global rememberBestFeatures
+        selectedBestFeatures = rememberBestFeatures.copy()
+        selectedBestFeatures = numpy.array(selectedBestFeatures) + 1
+        if 0 not in selectedBestFeatures:
+            selectedBestFeatures = numpy.insert(selectedBestFeatures, 0, [0])
+        a = numpy.array(totalSet)
+        e = a[:, selectedBestFeatures]
+
+        # skopiuj totalSet do test set
+        testSet = e.tolist()
+        # - losujemy próbki z całego zbioru ze zwracaniem(po prostu ich nie usuwamy) i wrzucamy do train seta
+        for i in range(0, numOfTrainSamples):
+            # wylosuj randomowo item do testu
+            item = random.choice(testSet)
+            # dodaj do train seta
+            trainSet.append(item)
+
+        # - test set - próbki które nie zostały ani razu wylosowane
+        for item in testSet:
+            if item in trainSet:
+                testSet.remove(item)
+
+        nnResult = calcNN()
+        nnQuality.append(nnResult)
+        print(nnResult)
+        knnResult = calckNN()
+        knnQuality.append(knnResult)
+        print(knnResult)
+        nmResult = calcNM()
+        nmQuality.append(nmResult)
+        print(nmResult)
+    nnMean = numpy.mean(nnQuality)
+    knnMean = numpy.mean(knnQuality)
+    nmMean = numpy.mean(nmQuality)
+    print("Bootstrap klasyfikator nn : ")
+    print(nnMean)
+    print("Bootstrap klasyfikator knn : ")
+    print(knnMean)
+    print("Bootstrap klasyfikator nm : ")
+    print(nmMean)
+    listbox_classify.insert(tkinter.END,
+                            "Bootstrap klasyfikator nn :  " + str(nnMean))
+    listbox_classify.insert(tkinter.END,
+                            "Bootstrap klasyfikator knn :  " + str(knnMean))
+    listbox_classify.insert(tkinter.END,
+                            "Bootstrap klasyfikator nm :  " + str(nmMean))
+
+    # TODO printy do usuniecia
+
 main = tkinter.Tk()
 main.title('SMPD')
 main.minsize(800, 500)
@@ -502,14 +577,20 @@ crossvalidation_label.grid(row=9, column=0, sticky="nw", padx=20, pady=20)
 crossvalidation_entry = ttk.Entry(page2, width=20)
 crossvalidation_entry.grid(row=9, column=1, sticky="nw", padx=20, pady=20)
 
-bootstrap_button = ttk.Button(page2, text="Bootstrap", cursor="hand2")
-bootstrap_button.grid(row=10, column=2, padx=20, pady=20, sticky="nw")
+bootstrap_button = ttk.Button(page2, text="Bootstrap", cursor="hand2", command=lambda: bootstrap())
+bootstrap_button.grid(row=11, column=2, padx=20, pady=20, sticky="nw")
 bootstrap_label = ttk.Label(page2, text="Num of iterations:", justify="left")
 bootstrap_label.grid(row=10, column=0, sticky="nw", padx=20, pady=20)
-bootstrap_entry = ttk.Entry(page2, width=20)
-bootstrap_entry.grid(row=10, column=1, sticky="nw", padx=20, pady=20)
+bootstrap_entry_iterations = ttk.Entry(page2, width=20)
+bootstrap_entry_iterations.grid(row=10, column=1, sticky="nw", padx=20, pady=20)
+bootstrap_label_percent = ttk.Label(page2, text="% of train set:", justify="left")
+bootstrap_label_percent.grid(row=11, column=0, sticky="nw", padx=20, pady=20)
+bootstrap_entry_percent = ttk.Entry(page2, width=20)
+bootstrap_entry_percent.grid(row=11, column=1, sticky="nw", padx=20, pady=20)
 
 listbox_classify = tkinter.Listbox(page2, activestyle="none", height=30, width=70)
 listbox_classify.grid(row=0, column=3, rowspan=100, padx=20, pady=20)
 
 main.mainloop()
+
+# TODO pousuwać sztywne wartości (1-64) głównie przt iteracjach
