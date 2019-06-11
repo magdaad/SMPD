@@ -405,8 +405,82 @@ def calcNM():
     return goodClassificationPercent
 
 
+
+
+
 def crossvalidate():
-    print("crossvalidate")
+    print("Crossvalidation")
+
+    nnQuality = []
+    knnQuality = []
+    nmQuality = []
+    knmQuality = []
+
+    # na ile zbiorów dzielimy próbki
+    subsets = int(crossvalidation_entry.get())
+    # ile iteracji przeprowadzamy
+    iterations = int(crossvalidation_iterations_entry.get())
+    print('subsets: ', subsets, 'iterations: ', iterations)
+
+    for i in range (0, iterations):
+        global trainSet
+        global testSet
+        global totalSet
+        trainSet = []
+        testSet = []
+        totalSet = []
+        # pobierz dane do trenowania i testowania
+        with open(filePath, "r") as f:
+            reader = csv.reader(f, delimiter=",")
+            for row in reader:
+                if "Acer" in row[0] or "Quercus" in row[0]:
+                    totalSet.append(row)
+
+        numOfSamplesInTrainingSet = math.ceil(len(totalSet)/subsets)
+
+        global rememberBestFeatures
+        selectedBestFeatures = rememberBestFeatures.copy()
+        selectedBestFeatures = numpy.array(selectedBestFeatures) + 1
+        if 0 not in selectedBestFeatures:
+            selectedBestFeatures = numpy.insert(selectedBestFeatures, 0, [0])
+        a = numpy.array(totalSet)
+        e = a[:, selectedBestFeatures]
+
+        # skopiuj totalSet do test set
+        testSet = e.tolist()
+        # losujemy odpowiednią ilość próbek do zbioru treningowego 
+        for i in range(0, numOfSamplesInTrainingSet):
+            # wylosuj losowo item do testu
+            item = random.choice(testSet)
+            # dodaj do train seta
+            trainSet.append(item)
+            # usuń z test seta
+            testSet.remove(item)
+
+        nnResult = calcNN()
+        nnQuality.append(nnResult)
+        print(nnResult)
+        knnResult = calckNN()
+        knnQuality.append(knnResult)
+        print(knnResult)
+        nmResult = calcNM()
+        nmQuality.append(nmResult)
+        print(nmResult)
+    nnMean = numpy.mean(nnQuality)
+    knnMean = numpy.mean(knnQuality)
+    nmMean = numpy.mean(nmQuality)
+    print("Kroswalidacja klasyfikator nn : ")
+    print(nnMean)
+    print("Kroswalidacja klasyfikator knn : ")
+    print(knnMean)
+    print("Kroswalidacja klasyfikator nm : ")
+    print(nmMean)
+    listbox_classify.insert(tkinter.END,
+                            "Kroswalidacja klasyfikator nn :  " + str(nnMean))
+    listbox_classify.insert(tkinter.END,
+                            "Kroswalidacja klasyfikator knn :  " + str(knnMean))
+    listbox_classify.insert(tkinter.END,
+                            "Kroswalidacja klasyfikator nm :  " + str(nmMean))
 
 
 def bootstrap():
@@ -453,10 +527,6 @@ def bootstrap():
             # dodaj do train seta
             trainSet.append(item)
 
-        # - test set - próbki które nie zostały ani razu wylosowane
-        for item in testSet:
-            if item in trainSet:
-                testSet.remove(item)
 
         nnResult = calcNN()
         nnQuality.append(nnResult)
@@ -495,7 +565,7 @@ notebook.grid(row=1, column=0, columnspan=40, rowspan=49, sticky='NESW')
 
 # Adds tab 1 of the notebook
 page1 = ttk.Frame(notebook)
-notebook.add(page1, text='Festure selection')
+notebook.add(page1, text='Feature selection')
 page1.rowconfigure(0, weight=1)
 page1.rowconfigure(1, weight=1)
 page1.rowconfigure(2, weight=100)
@@ -570,23 +640,34 @@ k_entry.grid(row=7, column=1, sticky="nw", padx=20, pady=20)
 execute_button = ttk.Button(page2, text="Execute", cursor="hand2", command=lambda: execute())
 execute_button.grid(row=8, column=0, padx=20, pady=20, sticky="nw")
 
+crossvalidation_header = ttk.Label(page2, text="Crosvalidation:", justify="left", font="Arial 16 bold")
+crossvalidation_header.grid(row=9, column=0, sticky="nw", padx=20, pady=0)
 crossvalidation_button = ttk.Button(page2, text="Crossvalidation", cursor="hand2", command=lambda: crossvalidate())
-crossvalidation_button.grid(row=9, column=2, padx=20, pady=20, sticky="nw")
+crossvalidation_button.grid(row=10, column=2, padx=20, pady=20, sticky="nw")
 crossvalidation_label = ttk.Label(page2, text="Num of subsets:", justify="left")
-crossvalidation_label.grid(row=9, column=0, sticky="nw", padx=20, pady=20)
+crossvalidation_label.grid(row=10, column=0, sticky="nw", padx=20, pady=10)
 crossvalidation_entry = ttk.Entry(page2, width=20)
-crossvalidation_entry.grid(row=9, column=1, sticky="nw", padx=20, pady=20)
+crossvalidation_entry.grid(row=10, column=1, sticky="nw", padx=20, pady=10)
+
+crossvalidation_iterations_label = ttk.Label(page2, text="Num of iterations:", justify="left")
+crossvalidation_iterations_label.grid(row=11, column=0, sticky="nw", padx=20, pady=10)
+crossvalidation_iterations_entry = ttk.Entry(page2, width=20)
+crossvalidation_iterations_entry.grid(row=11, column=1, sticky="nw", padx=20, pady=10)
+
+
+bootstrap_header = ttk.Label(page2, text="Bootstrap:", justify="left", font="Arial 16 bold")
+bootstrap_header.grid(row=12, column=0, sticky="nw", padx=20, pady=0)
 
 bootstrap_button = ttk.Button(page2, text="Bootstrap", cursor="hand2", command=lambda: bootstrap())
-bootstrap_button.grid(row=11, column=2, padx=20, pady=20, sticky="nw")
+bootstrap_button.grid(row=14, column=2, padx=20, pady=20, sticky="nw")
 bootstrap_label = ttk.Label(page2, text="Num of iterations:", justify="left")
-bootstrap_label.grid(row=10, column=0, sticky="nw", padx=20, pady=20)
+bootstrap_label.grid(row=13, column=0, sticky="nw", padx=20, pady=20)
 bootstrap_entry_iterations = ttk.Entry(page2, width=20)
-bootstrap_entry_iterations.grid(row=10, column=1, sticky="nw", padx=20, pady=20)
+bootstrap_entry_iterations.grid(row=13, column=1, sticky="nw", padx=20, pady=20)
 bootstrap_label_percent = ttk.Label(page2, text="% of train set:", justify="left")
-bootstrap_label_percent.grid(row=11, column=0, sticky="nw", padx=20, pady=20)
+bootstrap_label_percent.grid(row=14, column=0, sticky="nw", padx=20, pady=20)
 bootstrap_entry_percent = ttk.Entry(page2, width=20)
-bootstrap_entry_percent.grid(row=11, column=1, sticky="nw", padx=20, pady=20)
+bootstrap_entry_percent.grid(row=14, column=1, sticky="nw", padx=20, pady=20)
 
 listbox_classify = tkinter.Listbox(page2, activestyle="none", height=30, width=70)
 listbox_classify.grid(row=0, column=3, rowspan=100, padx=20, pady=20)
