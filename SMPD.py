@@ -408,6 +408,7 @@ def calcNM():
 
 
 
+
 def crossvalidate():
     print("Crossvalidation")
 
@@ -436,8 +437,6 @@ def crossvalidate():
                 if "Acer" in row[0] or "Quercus" in row[0]:
                     totalSet.append(row)
 
-        numOfSamplesInTrainingSet = math.ceil(len(totalSet)/subsets)
-
         global rememberBestFeatures
         selectedBestFeatures = rememberBestFeatures.copy()
         selectedBestFeatures = numpy.array(selectedBestFeatures) + 1
@@ -446,26 +445,40 @@ def crossvalidate():
         a = numpy.array(totalSet)
         e = a[:, selectedBestFeatures]
 
-        # skopiuj totalSet do test set
-        testSet = e.tolist()
-        # losujemy odpowiednią ilość próbek do zbioru treningowego 
-        for i in range(0, numOfSamplesInTrainingSet):
-            # wylosuj losowo item do testu
-            item = random.choice(testSet)
-            # dodaj do train seta
-            trainSet.append(item)
-            # usuń z test seta
-            testSet.remove(item)
+        totalSetCopy = e.tolist()
+        dividedSet = []
 
-        nnResult = calcNN()
-        nnQuality.append(nnResult)
-        print(nnResult)
-        knnResult = calckNN()
-        knnQuality.append(knnResult)
-        print(knnResult)
-        nmResult = calcNM()
-        nmQuality.append(nmResult)
-        print(nmResult)
+        for i in range(subsets):
+            dividedSet.append([]) 
+        
+        set = 0
+        for i in range(len(totalSetCopy)):
+            item = random.choice(totalSetCopy)
+            dividedSet[set].append(item)
+            totalSetCopy.remove(item)
+            set += 1
+            if(set == (subsets)):
+                set = 0
+        
+        # kopiujemy podzielone próbki aby móc działać na tym samym podziale
+        dividedSetCopy = dividedSet.copy()
+        for i in range(subsets, 0, -1):
+            trainSet = dividedSetCopy[i - 1].copy()
+            dividedSetCopy.pop(i - 1)
+            for item in dividedSetCopy:
+                testSet.extend(item)
+
+
+            nnResult = calcNN()
+            nnQuality.append(nnResult)
+            print(nnResult)
+            knnResult = calckNN()
+            knnQuality.append(knnResult)
+            print(knnResult)
+            nmResult = calcNM()
+            nmQuality.append(nmResult)
+            print(nmResult)
+
     nnMean = numpy.mean(nnQuality)
     knnMean = numpy.mean(knnQuality)
     nmMean = numpy.mean(nmQuality)
