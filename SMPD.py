@@ -515,7 +515,7 @@ def bootstrap():
 
 main = tkinter.Tk()
 main.title('SMPD')
-main.minsize(800, 500)
+main.minsize(700, 500)
 selected_method = tkinter.StringVar("")
 # Defines and places the notebook widget
 notebook = ttk.Notebook(main)
@@ -535,7 +535,7 @@ load.grid(row=0, column=0, padx=15, pady=15, sticky="nw")
 # choose how many features
 features_number = ttk.Combobox(page1, state="readonly",
                         values=[i for i in range(1, 65)])
-features_number.grid(row=0, column=1, sticky="n", padx=15, pady=15)
+features_number.grid(row=0, column=1, sticky="nw", padx=15, pady=15)
 
 # choose if fisher or sfs
 fisher_radio = ttk.Radiobutton(page1, text="Fisher",  value="Fisher", variable=selected_method)
@@ -544,7 +544,7 @@ sfs_radio = ttk.Radiobutton(page1, text="SFS",  value="SFS", variable=selected_m
 sfs_radio.grid(row=2, column=1, sticky="nw", padx=15)
 
 # show results in output_box
-output_box = tkinter.Listbox(page1, activestyle="none", height=30, width=70)
+output_box = tkinter.Listbox(page1, height=30, width=70)
 output_box.grid(row=0, column=3, rowspan=3, padx=15, pady=15)
 
 # calculate button
@@ -579,12 +579,12 @@ train_btn = ttk.Button(page2, text="Train", command=lambda: train())
 train_btn.grid(row=6, column=2, padx=15, pady=15, sticky="nw")
 train_label = ttk.Label(page2, text="Training part (%):", justify="left")
 train_label.grid(row=6, column=0, sticky="nw", padx=15, pady=15)
-train_entry = ttk.Entry(page2, width=20)
+train_entry = ttk.Entry(page2, width=15)
 train_entry.grid(row=6, column=1, sticky="nw", padx=15, pady=15)
 
 k_label = ttk.Label(page2, text="k:", justify="left")
 k_label.grid(row=7, column=0, sticky="nw", padx=15, pady=15)
-k_entry = ttk.Entry(page2, width=20)
+k_entry = ttk.Entry(page2, width=15)
 k_entry.grid(row=7, column=1, sticky="nw", padx=15, pady=15)
 
 # run button
@@ -597,11 +597,11 @@ crossvalidation_btn = ttk.Button(page2, text="Crossvalidation", command=lambda: 
 crossvalidation_btn.grid(row=10, column=2, padx=15, pady=15, sticky="nw")
 crossvalidation_label = ttk.Label(page2, text="Num of subsets:", justify="left")
 crossvalidation_label.grid(row=10, column=0, sticky="nw", padx=15, pady=10)
-crossvalidation_entry = ttk.Entry(page2, width=20)
+crossvalidation_entry = ttk.Entry(page2, width=15)
 crossvalidation_entry.grid(row=10, column=1, sticky="nw", padx=15, pady=10)
 crossvalidation_iterations_label = ttk.Label(page2, text="Num of iterations:", justify="left")
 crossvalidation_iterations_label.grid(row=11, column=0, sticky="nw", padx=15, pady=10)
-crossvalidation_iterations_entry = ttk.Entry(page2, width=20)
+crossvalidation_iterations_entry = ttk.Entry(page2, width=15)
 crossvalidation_iterations_entry.grid(row=11, column=1, sticky="nw", padx=15, pady=10)
 
 
@@ -611,11 +611,11 @@ bootstrap_btn = ttk.Button(page2, text="Bootstrap", command=lambda: bootstrap())
 bootstrap_btn.grid(row=14, column=2, padx=15, pady=15, sticky="nw")
 bootstrap_label = ttk.Label(page2, text="Num of iterations:", justify="left")
 bootstrap_label.grid(row=13, column=0, sticky="nw", padx=15, pady=15)
-bootstrap_entry_iterations = ttk.Entry(page2, width=20)
+bootstrap_entry_iterations = ttk.Entry(page2, width=15)
 bootstrap_entry_iterations.grid(row=13, column=1, sticky="nw", padx=15, pady=15)
 bootstrap_label_percent = ttk.Label(page2, text="% of train set:", justify="left")
 bootstrap_label_percent.grid(row=14, column=0, sticky="nw", padx=15, pady=15)
-bootstrap_entry_percent = ttk.Entry(page2, width=20)
+bootstrap_entry_percent = ttk.Entry(page2, width=15)
 bootstrap_entry_percent.grid(row=14, column=1, sticky="nw", padx=15, pady=15)
 
 output_box_classify = tkinter.Listbox(page2, activestyle="none", height=30, width=70)
