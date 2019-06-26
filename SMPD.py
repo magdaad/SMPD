@@ -19,7 +19,6 @@ rememberBestFeatures = [0, 1, 2, 3]
 def loadFile():
     global filePath
     filePath = filedialog.askopenfilename()
-    print(filePath)
     # loadData(filePath)
 
 
@@ -46,7 +45,6 @@ def calculateFeatures():
 
 
 def calculateFisher():
-    print("calculate fisher")
     acer, quercus = loadData(filePath)
     acerClass = numpy.array(acer, dtype=float)
     quercusClass = numpy.array(quercus, dtype=float)
@@ -58,7 +56,7 @@ def calculateFisher():
     bestIndexes = []
 
     # dodajemy 1 bo zbiera index a nie ilość cech
-    selectedNumberOfFeatures = combobox.current() + 1
+    selectedNumberOfFeatures = features_number.current() + 1
     if(selectedNumberOfFeatures == 1):
         for index in range(0, 64):
             # średnia dla cechy
@@ -79,15 +77,13 @@ def calculateFisher():
                 maxFisher = fisher
                 bestIndex = index
 
-        listbox.insert(tkinter.END, "index najlepszej cechy: " + str(bestIndex) + " wartość fisher: " + str(maxFisher))
+        output_box.insert(tkinter.END, "index najlepszej cechy: " + str(bestIndex) + " wartość fisher: " + str(maxFisher))
         global rememberBestFeatures
         del rememberBestFeatures[:]
         rememberBestFeatures.append(bestIndex)
-        print(rememberBestFeatures)
 
         # printuje index a nie numer cechy (index+1)
     else:
-        print("multiple")
         # dla wszystkich możliwych kombinacji cech (wybranej ilości cech)
         for combination in itertools.combinations([i for i in range(0, 64)], selectedNumberOfFeatures):
             # wektor średnich dla wybranych cech
@@ -116,14 +112,12 @@ def calculateFisher():
                 maxFisher = fisher
                 bestIndexes = combination
 
-        listbox.insert(tkinter.END, "Fisher: index najlepszych cech: " + str(bestIndexes) + " wartość fisher: " + str(maxFisher))
+        output_box.insert(tkinter.END, "Fisher: index najlepszych cech: " + str(bestIndexes) + " wartość fisher: " + str(maxFisher))
         del rememberBestFeatures[:]
         rememberBestFeatures = list(bestIndexes)
-        print(rememberBestFeatures)
 
 
 def calculateSFS():
-    print("calculate sfs")
     acer, quercus = loadData(filePath)
     acerClass = numpy.array(acer, dtype=float)
     quercusClass = numpy.array(quercus, dtype=float)
@@ -133,7 +127,7 @@ def calculateSFS():
     maxFisher = -1.0
     bestIndexes = []
     bestIndex = -1
-    selectedNumberOfFeatures = combobox.current() + 1
+    selectedNumberOfFeatures = features_number.current() + 1
 
     #policz fisher dla jednej cechy
     for index in range(0, 64):
@@ -195,15 +189,13 @@ def calculateSFS():
             # dorzuć do listy najlepszych cech nowy najlepszy index
             bestIndexes.append(bestIndex)
     # jak już mamy tyle cech ile chcieliśmy to kończymy i listujemy
-    listbox.insert(tkinter.END, "SFS: index najlepszych cech: " + str(bestIndexes) + " wartość fisher: " + str(maxFisher))
+    output_box.insert(tkinter.END, "SFS: index najlepszych cech: " + str(bestIndexes) + " wartość fisher: " + str(maxFisher))
     global rememberBestFeatures
     del rememberBestFeatures[:]
     rememberBestFeatures = bestIndexes.copy()
-    print(rememberBestFeatures)
 
 def train():
-    # podzielić na train i test set (cły wejściowy input)
-    print("train")
+    # podzielić na train i test set (cały wejściowy input)
     train_set_percent = int(train_entry.get())
     global trainSet
     global testSet
@@ -240,21 +232,20 @@ def train():
         # numpy.delete(testSet, item, axis=0)
 
 
-def execute():
-    print("execute")
+def run():
     if selected_classify_method.get() == "NN":
         goodClassificationPercent = calcNN()
-        listbox_classify.insert(tkinter.END,
+        output_box_classify.insert(tkinter.END,
                                 "NN procent dobrze sklasyfikowanych próbek: " + str(goodClassificationPercent))
 
     elif selected_classify_method.get() == "kNN":
         goodClassificationPercent = calckNN()
-        listbox_classify.insert(tkinter.END,
+        output_box_classify.insert(tkinter.END,
                                 "kNN procent dobrze sklasyfikowanych próbek: " + str(goodClassificationPercent))
 
     elif selected_classify_method.get() == "NM":
         goodClassificationPercent = calcNM()
-        listbox_classify.insert(tkinter.END,
+        output_box_classify.insert(tkinter.END,
                                 "NM procent dobrze sklasyfikowanych próbek: " + str(goodClassificationPercent))
 
 
@@ -289,17 +280,10 @@ def calcNN():
             badClassification = badClassification + 1
 
     goodClassificationPercent = 100 * goodClassification / numpy.array(testSetCopy).shape[0]
-
-    # TODO printy do usunięcia, przydatne do testu
-    print("Dobrze sklasyfikowane próbki: " + str(goodClassification))
-    print("Źle sklasyfikowane próbki: " + str(badClassification))
-    print("Dobrze sklasyfikowane próbki: " + str(goodClassificationPercent))
-    print(" próbki: " + str(numpy.array(testSetCopy).shape[0]))
     return goodClassificationPercent
 
 
 def calckNN():
-    print("knn")
     k = int(k_entry.get())
 
     testSetCopy = testSet.copy()
@@ -343,17 +327,10 @@ def calckNN():
             badClassification = badClassification + 1
 
     goodClassificationPercent = 100 * goodClassification / numpy.array(testSetCopy).shape[0]
-    print(goodClassificationPercent)
-    # TODO printy do usunięcia, przydatne do testu
-    print("Dobrze sklasyfikowane próbki: " + str(goodClassification))
-    print("Źle sklasyfikowane próbki: " + str(badClassification))
-    print("Dobrze sklasyfikowane próbki: " + str(goodClassificationPercent))
-    print(" próbki: " + str(numpy.array(testSetCopy).shape[0]))
     return goodClassificationPercent
 
 
 def calcNM():
-    print("calc NM")
     testSetCopy = testSet.copy()
     trainSetCopy = trainSet.copy()
     goodClassification = 0
@@ -401,27 +378,21 @@ def calcNM():
             badClassification = badClassification + 1
 
     goodClassificationPercent = 100 * goodClassification / numpy.array(testSetCopy).shape[0]
-    print(goodClassificationPercent)
     return goodClassificationPercent
 
 
 
 
-
-
 def crossvalidate():
-    print("Crossvalidation")
 
     nnQuality = []
     knnQuality = []
     nmQuality = []
-    knmQuality = []
 
     # na ile zbiorów dzielimy próbki
     subsets = int(crossvalidation_entry.get())
     # ile iteracji przeprowadzamy
     iterations = int(crossvalidation_iterations_entry.get())
-    print('subsets: ', subsets, 'iterations: ', iterations)
 
     for i in range (0, iterations):
         global trainSet
@@ -463,41 +434,32 @@ def crossvalidate():
         # kopiujemy podzielone próbki aby móc działać na tym samym podziale
         dividedSetCopy = dividedSet.copy()
         for i in range(subsets, 0, -1):
-            trainSet = dividedSetCopy[i - 1].copy()
+            testSet = dividedSetCopy[i - 1].copy()
             dividedSetCopy.pop(i - 1)
             for item in dividedSetCopy:
-                testSet.extend(item)
+                trainSet.extend(item)
+                
 
 
             nnResult = calcNN()
             nnQuality.append(nnResult)
-            print(nnResult)
             knnResult = calckNN()
             knnQuality.append(knnResult)
-            print(knnResult)
             nmResult = calcNM()
             nmQuality.append(nmResult)
-            print(nmResult)
 
     nnMean = numpy.mean(nnQuality)
     knnMean = numpy.mean(knnQuality)
     nmMean = numpy.mean(nmQuality)
-    print("Kroswalidacja klasyfikator nn : ")
-    print(nnMean)
-    print("Kroswalidacja klasyfikator knn : ")
-    print(knnMean)
-    print("Kroswalidacja klasyfikator nm : ")
-    print(nmMean)
-    listbox_classify.insert(tkinter.END,
+    output_box_classify.insert(tkinter.END,
                             "Kroswalidacja klasyfikator nn :  " + str(nnMean))
-    listbox_classify.insert(tkinter.END,
+    output_box_classify.insert(tkinter.END,
                             "Kroswalidacja klasyfikator knn :  " + str(knnMean))
-    listbox_classify.insert(tkinter.END,
+    output_box_classify.insert(tkinter.END,
                             "Kroswalidacja klasyfikator nm :  " + str(nmMean))
 
 
 def bootstrap():
-    print("Bootstrap")
     nnQuality = []
     knnQuality = []
     nmQuality = []
@@ -543,30 +505,20 @@ def bootstrap():
 
         nnResult = calcNN()
         nnQuality.append(nnResult)
-        print(nnResult)
         knnResult = calckNN()
         knnQuality.append(knnResult)
-        print(knnResult)
         nmResult = calcNM()
         nmQuality.append(nmResult)
-        print(nmResult)
     nnMean = numpy.mean(nnQuality)
     knnMean = numpy.mean(knnQuality)
     nmMean = numpy.mean(nmQuality)
-    print("Bootstrap klasyfikator nn : ")
-    print(nnMean)
-    print("Bootstrap klasyfikator knn : ")
-    print(knnMean)
-    print("Bootstrap klasyfikator nm : ")
-    print(nmMean)
-    listbox_classify.insert(tkinter.END,
+    output_box_classify.insert(tkinter.END,
                             "Bootstrap klasyfikator nn :  " + str(nnMean))
-    listbox_classify.insert(tkinter.END,
+    output_box_classify.insert(tkinter.END,
                             "Bootstrap klasyfikator knn :  " + str(knnMean))
-    listbox_classify.insert(tkinter.END,
+    output_box_classify.insert(tkinter.END,
                             "Bootstrap klasyfikator nm :  " + str(nmMean))
 
-    # TODO printy do usuniecia
 
 main = tkinter.Tk()
 main.title('SMPD')
@@ -584,30 +536,30 @@ page1.rowconfigure(1, weight=1)
 page1.rowconfigure(2, weight=100)
 
 # load file button
-load_button = ttk.Button(page1, text="Load file", cursor="hand2", command=lambda: loadFile())
-load_button.grid(row=0, column=0, padx=20, pady=20, sticky="nw")
+load = ttk.Button(page1, text="Load file", cursor="hand2", command=lambda: loadFile())
+load.grid(row=0, column=0, padx=15, pady=15, sticky="nw")
 
 # choose how many features
-combobox = ttk.Combobox(page1, state="readonly",
+features_number = ttk.Combobox(page1, state="readonly",
                         values=[i for i in range(1, 65)])
-combobox.grid(row=0, column=1, sticky="n", padx=20, pady=20)
+features_number.grid(row=0, column=1, sticky="n", padx=15, pady=15)
 
 # choose if fisher or sfs
-fisher_radiobutton = ttk.Radiobutton(page1, text="Fisher",  value="Fisher",
+fisher_radio = ttk.Radiobutton(page1, text="Fisher",  value="Fisher",
                                                 variable=selected_method, cursor="hand2")
-fisher_radiobutton.grid(row=1, column=1, sticky="nw", padx=20)
-sfs_radiobutton = ttk.Radiobutton(page1, text="SFS",  value="SFS", variable=selected_method,
+fisher_radio.grid(row=1, column=1, sticky="nw", padx=15)
+sfs_radio = ttk.Radiobutton(page1, text="SFS",  value="SFS", variable=selected_method,
                                                 cursor="hand2")
-sfs_radiobutton.grid(row=2, column=1, sticky="nw", padx=20)
+sfs_radio.grid(row=2, column=1, sticky="nw", padx=15)
 
-# show results in listbox
-listbox = tkinter.Listbox(page1, activestyle="none",
+# show results in output_box
+output_box = tkinter.Listbox(page1, activestyle="none",
                     height=30, width=70)
-listbox.grid(row=0, column=3, rowspan=3, padx=20, pady=20)
+output_box.grid(row=0, column=3, rowspan=3, padx=15, pady=15)
 
 # calculate button
-calculate_button = ttk.Button(page1, text="Calculate", cursor="hand2",command=lambda: calculateFeatures())
-calculate_button.grid(row=0, column=2, padx=20, pady=20, sticky="nw")
+calculate_btn = ttk.Button(page1, text="Calculate", cursor="hand2",command=lambda: calculateFeatures())
+calculate_btn.grid(row=0, column=2, padx=15, pady=15, sticky="nw")
 
 # Adds tab 2 of the notebook
 page2 = ttk.Frame(notebook)
@@ -615,76 +567,72 @@ selected_classify_method = tkinter.StringVar("")
 
 notebook.add(page2, text='Classifiers')
 
-load_button = ttk.Button(page2, text="Load file", cursor="hand2", command=lambda: loadFile())
-load_button.grid(row=0, column=0, padx=20, pady=20, sticky="nw")
+load = ttk.Button(page2, text="Load file", cursor="hand2", command=lambda: loadFile())
+load.grid(row=0, column=0, padx=15, pady=15, sticky="nw")
 
 # choose classifier method
 classifier_method_label = ttk.Label(page2, text="Choose method: ", justify="left")
-classifier_method_label.grid(row=1, column=0, sticky="nw", padx=20, pady=20)
+classifier_method_label.grid(row=1, column=0, sticky="nw", padx=15, pady=15)
 NN_radiobutton = ttk.Radiobutton(page2, text="NN",  value="NN",
                                                 variable=selected_classify_method, cursor="hand2")
-NN_radiobutton.grid(row=2, column=0, sticky="nw", padx=20)
+NN_radiobutton.grid(row=2, column=0, sticky="nw", padx=15)
 kNN_radiobutton = ttk.Radiobutton(page2, text="kNN",  value="kNN", variable=selected_classify_method,
                                                 cursor="hand2")
-kNN_radiobutton.grid(row=3, column=0, sticky="nw", padx=20)
+kNN_radiobutton.grid(row=3, column=0, sticky="nw", padx=15)
 
 NM_radiobutton = ttk.Radiobutton(page2, text="NM",  value="NM", variable=selected_classify_method,
                                                 cursor="hand2")
-NM_radiobutton.grid(row=4, column=0, sticky="nw", padx=20)
+NM_radiobutton.grid(row=4, column=0, sticky="nw", padx=15)
 
 kNM_radiobutton = ttk.Radiobutton(page2, text="kNM",  value="kNM", variable=selected_classify_method,
                                                 cursor="hand2")
-kNM_radiobutton.grid(row=5, column=0, sticky="nw", padx=20)
+kNM_radiobutton.grid(row=5, column=0, sticky="nw", padx=15)
 
 # train controls
-train_button = ttk.Button(page2, text="Train", cursor="hand2", command=lambda: train())
-train_button.grid(row=6, column=2, padx=20, pady=20, sticky="nw")
+train_btn = ttk.Button(page2, text="Train", cursor="hand2", command=lambda: train())
+train_btn.grid(row=6, column=2, padx=15, pady=15, sticky="nw")
 train_label = ttk.Label(page2, text="Training part (%):", justify="left")
-train_label.grid(row=6, column=0, sticky="nw", padx=20, pady=20)
+train_label.grid(row=6, column=0, sticky="nw", padx=15, pady=15)
 train_entry = ttk.Entry(page2, width=20)
-train_entry.grid(row=6, column=1, sticky="nw", padx=20, pady=20)
+train_entry.grid(row=6, column=1, sticky="nw", padx=15, pady=15)
 
 k_label = ttk.Label(page2, text="k:", justify="left")
-k_label.grid(row=7, column=0, sticky="nw", padx=20, pady=20)
+k_label.grid(row=7, column=0, sticky="nw", padx=15, pady=15)
 k_entry = ttk.Entry(page2, width=20)
-k_entry.grid(row=7, column=1, sticky="nw", padx=20, pady=20)
+k_entry.grid(row=7, column=1, sticky="nw", padx=15, pady=15)
 
-# execute button
-execute_button = ttk.Button(page2, text="Execute", cursor="hand2", command=lambda: execute())
-execute_button.grid(row=8, column=0, padx=20, pady=20, sticky="nw")
+# run button
+run_btn = ttk.Button(page2, text="Run", cursor="hand2", command=lambda: run())
+run_btn.grid(row=8, column=0, padx=15, pady=15, sticky="nw")
 
 crossvalidation_header = ttk.Label(page2, text="Crosvalidation:", justify="left", font="Arial 16 bold")
-crossvalidation_header.grid(row=9, column=0, sticky="nw", padx=20, pady=0)
-crossvalidation_button = ttk.Button(page2, text="Crossvalidation", cursor="hand2", command=lambda: crossvalidate())
-crossvalidation_button.grid(row=10, column=2, padx=20, pady=20, sticky="nw")
+crossvalidation_header.grid(row=9, column=0, sticky="nw", padx=15, pady=0)
+crossvalidation_btn = ttk.Button(page2, text="Crossvalidation", cursor="hand2", command=lambda: crossvalidate())
+crossvalidation_btn.grid(row=10, column=2, padx=15, pady=15, sticky="nw")
 crossvalidation_label = ttk.Label(page2, text="Num of subsets:", justify="left")
-crossvalidation_label.grid(row=10, column=0, sticky="nw", padx=20, pady=10)
+crossvalidation_label.grid(row=10, column=0, sticky="nw", padx=15, pady=10)
 crossvalidation_entry = ttk.Entry(page2, width=20)
-crossvalidation_entry.grid(row=10, column=1, sticky="nw", padx=20, pady=10)
-
+crossvalidation_entry.grid(row=10, column=1, sticky="nw", padx=15, pady=10)
 crossvalidation_iterations_label = ttk.Label(page2, text="Num of iterations:", justify="left")
-crossvalidation_iterations_label.grid(row=11, column=0, sticky="nw", padx=20, pady=10)
+crossvalidation_iterations_label.grid(row=11, column=0, sticky="nw", padx=15, pady=10)
 crossvalidation_iterations_entry = ttk.Entry(page2, width=20)
-crossvalidation_iterations_entry.grid(row=11, column=1, sticky="nw", padx=20, pady=10)
+crossvalidation_iterations_entry.grid(row=11, column=1, sticky="nw", padx=15, pady=10)
 
 
 bootstrap_header = ttk.Label(page2, text="Bootstrap:", justify="left", font="Arial 16 bold")
-bootstrap_header.grid(row=12, column=0, sticky="nw", padx=20, pady=0)
-
-bootstrap_button = ttk.Button(page2, text="Bootstrap", cursor="hand2", command=lambda: bootstrap())
-bootstrap_button.grid(row=14, column=2, padx=20, pady=20, sticky="nw")
+bootstrap_header.grid(row=12, column=0, sticky="nw", padx=15, pady=0)
+bootstrap_btn = ttk.Button(page2, text="Bootstrap", cursor="hand2", command=lambda: bootstrap())
+bootstrap_btn.grid(row=14, column=2, padx=15, pady=15, sticky="nw")
 bootstrap_label = ttk.Label(page2, text="Num of iterations:", justify="left")
-bootstrap_label.grid(row=13, column=0, sticky="nw", padx=20, pady=20)
+bootstrap_label.grid(row=13, column=0, sticky="nw", padx=15, pady=15)
 bootstrap_entry_iterations = ttk.Entry(page2, width=20)
-bootstrap_entry_iterations.grid(row=13, column=1, sticky="nw", padx=20, pady=20)
+bootstrap_entry_iterations.grid(row=13, column=1, sticky="nw", padx=15, pady=15)
 bootstrap_label_percent = ttk.Label(page2, text="% of train set:", justify="left")
-bootstrap_label_percent.grid(row=14, column=0, sticky="nw", padx=20, pady=20)
+bootstrap_label_percent.grid(row=14, column=0, sticky="nw", padx=15, pady=15)
 bootstrap_entry_percent = ttk.Entry(page2, width=20)
-bootstrap_entry_percent.grid(row=14, column=1, sticky="nw", padx=20, pady=20)
+bootstrap_entry_percent.grid(row=14, column=1, sticky="nw", padx=15, pady=15)
 
-listbox_classify = tkinter.Listbox(page2, activestyle="none", height=30, width=70)
-listbox_classify.grid(row=0, column=3, rowspan=100, padx=20, pady=20)
+output_box_classify = tkinter.Listbox(page2, activestyle="none", height=30, width=70)
+output_box_classify.grid(row=0, column=3, rowspan=100, padx=15, pady=15)
 
 main.mainloop()
-
-# TODO pousuwać sztywne wartości (1-64) głównie przt iteracjach
