@@ -21,7 +21,6 @@ def loadFile():
     filePath = filedialog.askopenfilename()
     # loadData(filePath)
 
-
 def loadData(filePath):
     acerClass = []
     quercusClass = []
@@ -380,9 +379,6 @@ def calcNM():
     goodClassificationPercent = 100 * goodClassification / numpy.array(testSetCopy).shape[0]
     return goodClassificationPercent
 
-
-
-
 def crossvalidate():
 
     nnQuality = []
@@ -438,8 +434,6 @@ def crossvalidate():
             dividedSetCopy.pop(i - 1)
             for item in dividedSetCopy:
                 trainSet.extend(item)
-                
-
 
             nnResult = calcNN()
             nnQuality.append(nnResult)
@@ -463,7 +457,6 @@ def bootstrap():
     nnQuality = []
     knnQuality = []
     nmQuality = []
-    knmQuality = []
 
     iterations = int(bootstrap_entry_iterations.get())
     train_set_percent = int(bootstrap_entry_percent.get())
@@ -536,7 +529,7 @@ page1.rowconfigure(1, weight=1)
 page1.rowconfigure(2, weight=100)
 
 # load file button
-load = ttk.Button(page1, text="Load file", cursor="hand2", command=lambda: loadFile())
+load = ttk.Button(page1, text="Load file", command=lambda: loadFile())
 load.grid(row=0, column=0, padx=15, pady=15, sticky="nw")
 
 # choose how many features
@@ -545,20 +538,17 @@ features_number = ttk.Combobox(page1, state="readonly",
 features_number.grid(row=0, column=1, sticky="n", padx=15, pady=15)
 
 # choose if fisher or sfs
-fisher_radio = ttk.Radiobutton(page1, text="Fisher",  value="Fisher",
-                                                variable=selected_method, cursor="hand2")
+fisher_radio = ttk.Radiobutton(page1, text="Fisher",  value="Fisher", variable=selected_method)
 fisher_radio.grid(row=1, column=1, sticky="nw", padx=15)
-sfs_radio = ttk.Radiobutton(page1, text="SFS",  value="SFS", variable=selected_method,
-                                                cursor="hand2")
+sfs_radio = ttk.Radiobutton(page1, text="SFS",  value="SFS", variable=selected_method)
 sfs_radio.grid(row=2, column=1, sticky="nw", padx=15)
 
 # show results in output_box
-output_box = tkinter.Listbox(page1, activestyle="none",
-                    height=30, width=70)
+output_box = tkinter.Listbox(page1, activestyle="none", height=30, width=70)
 output_box.grid(row=0, column=3, rowspan=3, padx=15, pady=15)
 
 # calculate button
-calculate_btn = ttk.Button(page1, text="Calculate", cursor="hand2",command=lambda: calculateFeatures())
+calculate_btn = ttk.Button(page1, text="Calculate", command=lambda: calculateFeatures())
 calculate_btn.grid(row=0, column=2, padx=15, pady=15, sticky="nw")
 
 # Adds tab 2 of the notebook
@@ -567,29 +557,25 @@ selected_classify_method = tkinter.StringVar("")
 
 notebook.add(page2, text='Classifiers')
 
-load = ttk.Button(page2, text="Load file", cursor="hand2", command=lambda: loadFile())
+load = ttk.Button(page2, text="Load file", command=lambda: loadFile())
 load.grid(row=0, column=0, padx=15, pady=15, sticky="nw")
 
 # choose classifier method
 classifier_method_label = ttk.Label(page2, text="Choose method: ", justify="left")
 classifier_method_label.grid(row=1, column=0, sticky="nw", padx=15, pady=15)
-NN_radiobutton = ttk.Radiobutton(page2, text="NN",  value="NN",
-                                                variable=selected_classify_method, cursor="hand2")
+NN_radiobutton = ttk.Radiobutton(page2, text="NN",  value="NN", variable=selected_classify_method)
 NN_radiobutton.grid(row=2, column=0, sticky="nw", padx=15)
-kNN_radiobutton = ttk.Radiobutton(page2, text="kNN",  value="kNN", variable=selected_classify_method,
-                                                cursor="hand2")
+kNN_radiobutton = ttk.Radiobutton(page2, text="kNN",  value="kNN", variable=selected_classify_method)
 kNN_radiobutton.grid(row=3, column=0, sticky="nw", padx=15)
 
-NM_radiobutton = ttk.Radiobutton(page2, text="NM",  value="NM", variable=selected_classify_method,
-                                                cursor="hand2")
+NM_radiobutton = ttk.Radiobutton(page2, text="NM",  value="NM", variable=selected_classify_method)
 NM_radiobutton.grid(row=4, column=0, sticky="nw", padx=15)
 
-kNM_radiobutton = ttk.Radiobutton(page2, text="kNM",  value="kNM", variable=selected_classify_method,
-                                                cursor="hand2")
+kNM_radiobutton = ttk.Radiobutton(page2, text="kNM",  value="kNM", variable=selected_classify_method)
 kNM_radiobutton.grid(row=5, column=0, sticky="nw", padx=15)
 
 # train controls
-train_btn = ttk.Button(page2, text="Train", cursor="hand2", command=lambda: train())
+train_btn = ttk.Button(page2, text="Train", command=lambda: train())
 train_btn.grid(row=6, column=2, padx=15, pady=15, sticky="nw")
 train_label = ttk.Label(page2, text="Training part (%):", justify="left")
 train_label.grid(row=6, column=0, sticky="nw", padx=15, pady=15)
@@ -602,12 +588,12 @@ k_entry = ttk.Entry(page2, width=20)
 k_entry.grid(row=7, column=1, sticky="nw", padx=15, pady=15)
 
 # run button
-run_btn = ttk.Button(page2, text="Run", cursor="hand2", command=lambda: run())
+run_btn = ttk.Button(page2, text="Run", command=lambda: run())
 run_btn.grid(row=8, column=0, padx=15, pady=15, sticky="nw")
 
 crossvalidation_header = ttk.Label(page2, text="Crosvalidation:", justify="left", font="Arial 16 bold")
 crossvalidation_header.grid(row=9, column=0, sticky="nw", padx=15, pady=0)
-crossvalidation_btn = ttk.Button(page2, text="Crossvalidation", cursor="hand2", command=lambda: crossvalidate())
+crossvalidation_btn = ttk.Button(page2, text="Crossvalidation", command=lambda: crossvalidate())
 crossvalidation_btn.grid(row=10, column=2, padx=15, pady=15, sticky="nw")
 crossvalidation_label = ttk.Label(page2, text="Num of subsets:", justify="left")
 crossvalidation_label.grid(row=10, column=0, sticky="nw", padx=15, pady=10)
@@ -621,7 +607,7 @@ crossvalidation_iterations_entry.grid(row=11, column=1, sticky="nw", padx=15, pa
 
 bootstrap_header = ttk.Label(page2, text="Bootstrap:", justify="left", font="Arial 16 bold")
 bootstrap_header.grid(row=12, column=0, sticky="nw", padx=15, pady=0)
-bootstrap_btn = ttk.Button(page2, text="Bootstrap", cursor="hand2", command=lambda: bootstrap())
+bootstrap_btn = ttk.Button(page2, text="Bootstrap", command=lambda: bootstrap())
 bootstrap_btn.grid(row=14, column=2, padx=15, pady=15, sticky="nw")
 bootstrap_label = ttk.Label(page2, text="Num of iterations:", justify="left")
 bootstrap_label.grid(row=13, column=0, sticky="nw", padx=15, pady=15)
